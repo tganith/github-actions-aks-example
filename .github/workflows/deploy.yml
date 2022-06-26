@@ -1,0 +1,26 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: docker build
+      run: docker build -t github-actions-aks:'${{github.sha}}' .
+    
+    - name: docker login
+      run: docker login --username '${{secrets.DOCKER_LOGIN}}' --password '${{secrets.DOCKER_PASSWORD}}'
+      
+    - name: tag docker image
+      run: docker tag github-actions-aks:'${{github.sha}}' '${{secrets.DOCKER_LOGIN}}'/github-actions-aks:'${{github.sha}}'
+    
+    - name: push docker image
+      run: docker push '${{secrets.DOCKER_LOGIN}}'/github-actions-aks:'${{github.sha}}'
